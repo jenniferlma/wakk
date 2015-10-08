@@ -4,6 +4,7 @@ import code.Content;
 import code.IContent;
 import code.Group;
 import code.User;
+import io.vertx.core.json.JsonObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +42,26 @@ public class ObjectSupplier {
     }
 
     public void delete(long  internalId){
+
+
         _objectCache.remove(internalId);
+    }
+
+    public void makeUser(JsonObject json) {
+
+        CacheEntry<User> user = new CacheEntry<>(User.buildFromJson(json));
+        long key = user.get().get_internalId();
+        _objectCache.put(key, user);
+
+
+    }
+
+    //TODO implement these
+    public void makeGroup(JsonObject json) {
+
+    }
+
+    public void makeContent(JsonObject json) {
     }
 
 

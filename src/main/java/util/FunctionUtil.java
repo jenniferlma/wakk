@@ -24,4 +24,12 @@ public class FunctionUtil {
         return _matcher.matches();
 
     }
+
+    //TODO implement id assignment
+    public static Long generateId() {
+
+        return new Long(0);
+    }
+
+
 }

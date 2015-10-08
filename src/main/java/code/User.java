@@ -1,16 +1,17 @@
 package code;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import util.FunctionUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class User {
 
-    private long _userId;
+    private long _internalId;
     private long _userPhoto;
 
     private String _userName;
@@ -21,8 +22,8 @@ public class User {
     private Set<Long> _groupList;
     private Set<Long> _contentList;
 
-    private boolean empty;
-    private boolean deleted;
+    private boolean _empty;
+    private boolean _deleted;
 
     public User() {
 
@@ -35,13 +36,51 @@ public class User {
         return new User();
     }
 
-    public long get_userId() {
-        return _userId;
+    public static User buildFromJson(JsonObject json) {
+        return new User(json);
+    }
+
+    public User(JsonObject json) {
+
+        //TODO write this user object to db
+
+        json.put("userPhoto", _userPhoto);
+        json.put("userName", _userName);
+        json.put("externalId", _externalId);
+        json.put("email", _email);
+        json.put("passPhrase", _passWord);
+
+
+        List<Long> groups = new ArrayList<>(_groupList);
+        List<Long> content = new ArrayList<>(_contentList);
+
+        json.put("groupList", new JsonArray(groups));
+        json.put("contentList", new JsonArray(content));
+
+        _internalId = FunctionUtil.generateId();
+        _userPhoto = json.getLong("userPhoto");
+        _userName = json.getString("userName");
+        _externalId = json.getString("externalId");
+        _email = json.getString("email");
+        _passWord = json.getString("passPhrase");
+
+
+        _groupList = new HashSet<>();
+        _contentList = new HashSet<>();
+
+        _empty = false;
+        _deleted = false;
+
+
+    }
+
+    public long get_internalId() {
+        return _internalId;
     }
 
 
-    public void set_userId(long _userId) {
-        this._userId = _userId;
+    public void set_internalId(long _internalId) {
+        this._internalId = _internalId;
     }
 
 
@@ -113,7 +152,7 @@ public class User {
 
         JsonObject json = new JsonObject();
 
-        json.put("userId", _userId);
+        json.put("userId", _internalId);
         json.put("userPhoto", _userPhoto);
         json.put("userName",  _userName);
         json.put("externalId", _externalId);
@@ -132,13 +171,14 @@ public class User {
 
     }
 
+
     public String toString(){
 
         return asJson().toString();
     }
 
     public boolean empty(){
-        return empty;
+        return _empty;
     }
 
 
