@@ -1,8 +1,10 @@
-/**
- * PdfContent.java
+package code; /**
+ * code.PdfContent.java
  * Draft version with no functionality.
  * Created by wendyjan on 9/28/15 to test IDE and JVM setup.
  */
+import io.vertx.core.json.JsonObject;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -46,5 +48,24 @@ public class PdfContent implements Content {
     public String getLocationOnWeb() {
         return _locationOnWeb;
     }
+
+    public String toString(){
+        return asJson().toString();
+    }
+
+    public JsonObject asJson(){
+
+        JsonObject json = new JsonObject();
+        json.put("internalId", _internalId);
+        json.put("crationTime",_creationDateTime);
+        json.put("modificationTime",_modificationDateTime);
+        json.put("creator",_creatorId);
+        json.put("group",_groupId);
+        json.put("header", _header);
+        json.put("location", _locationOnWeb);
+
+        return json;
+         }
+
 
 }
