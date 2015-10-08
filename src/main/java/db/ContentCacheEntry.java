@@ -1,5 +1,5 @@
 package db;
-
+import code.Content;
 /**
  * Created by Eric Blair on 10/8/2015.
  */
@@ -19,7 +19,7 @@ public class ContentCacheEntry implements ObjectCacheEntry {
     }
 
     public Content get(){
-        return _Content;
+        return _content;
     }
 
     public ContentCacheEntry(Content content){
