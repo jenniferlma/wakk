@@ -1,5 +1,6 @@
 package code;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -20,9 +21,17 @@ public class User {
     private Set<Long> _groupList;
     private Set<Long> _contentList;
 
+    private boolean empty;
+
     public User() {
 
 
+    }
+    public static User buildFromId(long internalId){
+
+        //TODO make user object from db queries
+
+        return new User();
     }
 
     public long get_userId() {
@@ -125,6 +134,10 @@ public class User {
     public String toString(){
 
         return asJson().toString();
+    }
+
+    public boolean empty(){
+        return empty;
     }
 
 
