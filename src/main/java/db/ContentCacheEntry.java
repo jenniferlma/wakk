@@ -1,12 +1,12 @@
 package db;
-import code.Content;
+import code.IContent;
 /**
  * Created by Eric Blair on 10/8/2015.
  */
 public class ContentCacheEntry implements ObjectCacheEntry {
 
     private boolean _dirty;
-    private Content _content;
+    private IContent _content;
 
     @Override
     public void setDirty( boolean bool){
@@ -18,11 +18,11 @@ public class ContentCacheEntry implements ObjectCacheEntry {
         return _dirty;
     }
 
-    public Content get(){
+    public IContent get(){
         return _content;
     }
 
-    public ContentCacheEntry(Content content){
+    public ContentCacheEntry(IContent content){
         _dirty = false;
         _content = content;
     }

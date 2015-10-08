@@ -1,5 +1,8 @@
 package server;
 
+import code.Content;
+import code.Group;
+import code.IContent;
 import code.User;
 import db.ObjectSupplier;
 import io.vertx.core.Handler;
@@ -49,6 +52,7 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
     }
     public void handlePost(HttpServerRequest request){
 
+
         String objectType = request.getHeader(INTERNAL_ID);
         switch (objectType){
             case USER :postUser(request);
@@ -62,13 +66,14 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
         }
     }
     public void handlePut(HttpServerRequest request){
+        String internalIdAsString = request.getHeader(TYPE);
         String objectType = request.getHeader(INTERNAL_ID);
         switch (objectType){
-            case USER :putUser(request);
+            case USER :putUser(request,Long.valueOf(internalIdAsString).longValue());
                 break;
-            case CONTENT:putContent(request);
+            case CONTENT:putContent(request,Long.valueOf(internalIdAsString).longValue());
                 break;
-            case GROUP:putGroup(request);
+            case GROUP:putGroup(request,Long.valueOf(internalIdAsString).longValue());
                 break;
             //TODO Make this a log, add more info
             default: System.out.println("Unsupported Get");
@@ -130,18 +135,36 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
     }
 
     //TODO: the rest of the methods
-    public void putUser(HttpServerRequest request){}
+    public void putUser(HttpServerRequest request,long internalId){}
     public void postUser(HttpServerRequest request){}
     public void deleteUser(HttpServerRequest request,long internalId){}
 
-    public void getContent(HttpServerRequest request,long internalId){}
-    public void putContent(HttpServerRequest request){}
+    public void getContent(HttpServerRequest request,long internalId){
+
+        IContent content = _objectSupplier.getContent(internalId);
+
+        if(content.empty()){
+            request.response().setStatusCode(404).end("404, Not Found!");
+        }
+        JsonObject userAsJson = content.asJson();
+        request.response().end(userAsJson.toString());
+    }
+    public void putContent(HttpServerRequest request,long internalId){}
     public void postContent(HttpServerRequest request){}
     public void deleteContent(HttpServerRequest request,long internalId){}
 
-    public void getGroup(HttpServerRequest request,long internalId){}
-    public void putGroup(HttpServerRequest request){}
+    public void getGroup(HttpServerRequest request,long internalId){
+
+        Group group = _objectSupplier.getGroup(internalId);
+
+        if(group.empty()){
+            request.response().setStatusCode(404).end("404, Not Found!");
+        }
+        JsonObject userAsJson = group.asJson();
+        request.response().end(userAsJson.toString());
+    }
     public void postGroup(HttpServerRequest request){}
+    public void putGroup(HttpServerRequest request,long internalId){}
     public void deleteGroup(HttpServerRequest request,long internalId){}
 
 }

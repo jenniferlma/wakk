@@ -1,28 +1,11 @@
-package code; /**
- * code.Content.java
- * Draft version with no functionality.
- * Created by wendyjan on 9/28/15 to test IDE and JVM setup.
+package code;
+
+/**
+ * Created by Eric Blair on 10/8/2015.
  */
-import io.vertx.core.json.JsonObject;
+public class Content  {
 
-import java.time.LocalDateTime;
-
-interface Content {
-
-    void testerMethod();
-
-    LocalDateTime getModTime();
-
-    LocalDateTime getCreateTime();
-
-    long getCreatorId();
-
-    long getInternalId();
-
-    String getHeader();
-
-    String getLocationOnWeb();
-
-    JsonObject asJson();
-
+    public static IContent buildFromId(Long internalId){
+        return null;
+    }
 }

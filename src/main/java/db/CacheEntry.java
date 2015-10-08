@@ -5,10 +5,10 @@ import code.User;
 /**
  * Created by Eric Blair on 10/8/2015.
  */
-public class UserCacheEntry implements ObjectCacheEntry{
+public class CacheEntry<T> implements ObjectCacheEntry{
 
     private boolean _dirty;
-    private User _user;
+    private T _object;
 
     @Override
     public void setDirty( boolean bool){
@@ -20,13 +20,13 @@ public class UserCacheEntry implements ObjectCacheEntry{
         return _dirty;
     }
 
-    public User get(){
-        return _user;
+    public T get(){
+        return _object;
     }
 
-    public UserCacheEntry(User user){
+    public CacheEntry(T object){
         _dirty = false;
-        _user = user;
+        _object = object;
     }
 
 

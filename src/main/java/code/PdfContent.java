@@ -8,18 +8,21 @@ import io.vertx.core.json.JsonObject;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class PdfContent implements Content {
+public class PdfContent implements IContent {
 
-    long _internalId;
-    LocalDateTime _creationDateTime;
-    LocalDateTime _modificationDateTime;
-    long _creatorId;
-    long _groupId;
-    String _header; // for a quick summary of the content, that might appear as a tool tip
-    String _locationOnWeb; // for Ameen's blobs
+    private long _internalId;
+    private LocalDateTime _creationDateTime;
+    private LocalDateTime _modificationDateTime;
+    private long _creatorId;
+    private long _groupId;
+    private String _header; // for a quick summary of the content, that might appear as a tool tip
+    private String _locationOnWeb; // for Ameen's blobs
+    private boolean _deleted;
+    private boolean _empty;
+
 
     public void testerMethod() {
-        System.out.println("PDFContent class and Content interface are working with IntelliJ and JVM 1.8.");
+        System.out.println("PDFContent class and IContent interface are working with IntelliJ and JVM 1.8.");
         LocalDateTime date = LocalDateTime.now();
         String text = date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         System.out.println(text);
@@ -65,7 +68,16 @@ public class PdfContent implements Content {
         json.put("location", _locationOnWeb);
 
         return json;
-         }
+    }
+
+    @Override
+    public boolean delete(){
+       return _deleted = true;
+    }
+
+    public boolean empty(){
+        return _empty;
+    }
 
 
 }

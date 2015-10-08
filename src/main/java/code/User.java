@@ -22,6 +22,7 @@ public class User {
     private Set<Long> _contentList;
 
     private boolean empty;
+    private boolean deleted;
 
     public User() {
 
