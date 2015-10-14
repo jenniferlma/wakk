@@ -44,18 +44,7 @@ public class User {
 
         //TODO write this user object to db
 
-        json.put("userPhoto", _userPhoto);
-        json.put("userName", _userName);
-        json.put("externalId", _externalId);
-        json.put("email", _email);
-        json.put("passPhrase", _passWord);
 
-
-        List<Long> groups = new ArrayList<>(_groupList);
-        List<Long> content = new ArrayList<>(_contentList);
-
-        json.put("groupList", new JsonArray(groups));
-        json.put("contentList", new JsonArray(content));
 
         _internalId = FunctionUtil.generateId();
         _userPhoto = json.getLong("userPhoto");
