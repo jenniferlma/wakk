@@ -34,6 +34,10 @@ public class User {
 
     }
     public static User buildFromId(long internalId) throws SQLException {
+        // TODO query db to get item using internalId
+        //Statement stmt = conn.createStatement();
+        //ResultSet rs = stmt.executeQuery("SELECT * " +
+        //        "FROM Customers WHERE Snum = 2001");
         return new User(internalId);
     }
 
@@ -57,7 +61,7 @@ public class User {
         Statement statement = connection.createStatement();
 
         //Process Query Results
-        ResultSet result = statement.executeQuery("SELECT * FROM user WHERE external_id = internalId");
+        ResultSet result = statement.executeQuery("SELECT * FROM user WHERE user_id = "+internalId+";");
         while(result.next()){
             //Add code to retrieve Blob type from DB
             System.out.println("User Found");
