@@ -4,15 +4,18 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import util.FunctionUtil;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.sql.*;
+import java.util.*;
+
+import static java.sql.DriverManager.getConnection;
 
 public class User {
 
     private long _internalId;
-    private long _userPhoto;
+    private String _userPhoto;
 
     private String _userName;
     private String _externalId;
@@ -25,29 +28,62 @@ public class User {
     private boolean _empty;
     private boolean _deleted;
 
+    private Connection connection;
+
     public User() {
 
-
     }
-    public static User buildFromId(long internalId){
-
-        //TODO make user object from db queries
-
-        return new User();
+    public static User buildFromId(long internalId) throws SQLException {
+        // TODO query db to get item using internalId
+        //Statement stmt = conn.createStatement();
+        //ResultSet rs = stmt.executeQuery("SELECT * " +
+        //        "FROM Customers WHERE Snum = 2001");
+        return new User(internalId);
     }
 
-    public static User buildFromJson(JsonObject json) {
+    public User(long internalId) throws SQLException{
+
+        try {
+            Class.forName("org.postgres.Driver"); //Load Driver
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        //Connect to Database using SSL Validation
+        String url = "jdbc:postgresql://localhost:5432/kwak";
+        Properties properties = new Properties();
+        properties.setProperty("user", "postgres");
+        properties.setProperty("password", "root");
+        properties.setProperty("ssl", "true");
+        connection = getConnection(url, properties);
+
+        //Issue Query
+        Statement statement = connection.createStatement();
+
+        //Process Query Results
+        ResultSet result = statement.executeQuery("SELECT * FROM user WHERE user_id = "+internalId+";");
+        while(result.next()){
+            //Add code to retrieve Blob type from DB
+            System.out.println("User Found");
+            System.out.println(result.getString(1));
+            result.close();
+        }
+        statement.close();
+        connection.close();
+    }
+
+    public static User buildFromJson(JsonObject json) throws SQLException {
         return new User(json);
     }
 
-    public User(JsonObject json) {
+    public User(JsonObject json) throws SQLException {
 
         //TODO write this user object to db
 
 
 
         _internalId = FunctionUtil.generateId();
-        _userPhoto = json.getLong("userPhoto");
+        _userPhoto = json.getString("userPhoto");
         _userName = json.getString("userName");
         _externalId = json.getString("externalId");
         _email = json.getString("email");
@@ -60,6 +96,36 @@ public class User {
         _empty = false;
         _deleted = false;
 
+        try {
+            Class.forName("org.postgres.Driver"); //Load Driver
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            OutputStream os = new FileOutputStream(_userPhoto);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        //Connect to Database using SSL Validation
+        String url = "jdbc:postgresql://localhost:5432/kwak";
+        Properties properties = new Properties();
+        properties.setProperty("user", "postgres");
+        properties.setProperty("password", "root");
+        properties.setProperty("ssl", "true");
+        connection = getConnection(url, properties);
+        //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
+        String queryStatement = "INSERT INTO user(user_id, internal_id, username, contact_email, user_photo_blob, password) VALUES(?, ?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
+        preparedStatement.setLong(1, get_internalId());
+        preparedStatement.setString(3, get_userName());
+        preparedStatement.setString(4, get_email());
+        //preparedStatement.setBlob(5, get_userPhoto());
+        //preparedStatement.setString(6, get_passWord());
+        preparedStatement.executeUpdate();
+
+        connection.close();
 
     }
 
@@ -123,12 +189,12 @@ public class User {
     }
 
 
-    public long get_userPhoto() {
+    public String get_userPhoto() {
         return _userPhoto;
     }
 
 
-    public void set_userPhoto(long _userPhoto) {
+    public void set_userPhoto(String _userPhoto) {
         this._userPhoto = _userPhoto;
     }
 
