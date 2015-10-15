@@ -10,4 +10,5 @@ public class Constants {
     public static final String CONTENT = "content";
     public static final String USER = "user";
     public static final String GROUP = "group";
+    public static final String USER_ID = "userId";
 }
