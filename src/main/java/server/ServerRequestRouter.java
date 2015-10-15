@@ -6,10 +6,12 @@ import code.IContent;
 import code.User;
 import db.ObjectSupplier;
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
+import util.FunctionUtil;
 
 import static util.Constants.*;
 
@@ -135,8 +137,19 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
     }
 
     //TODO: the rest of the methods
-    public void putUser(HttpServerRequest request,long internalId){}
-    public void postUser(HttpServerRequest request){}
+    public void putUser(HttpServerRequest request,long internalId){
+        MultiMap params = request.params();
+        JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+
+
+
+    }
+    public void postUser(HttpServerRequest request){
+
+        MultiMap params = request.params();
+        JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+
+    }
     public void deleteUser(HttpServerRequest request,long internalId){}
 
     public void getContent(HttpServerRequest request,long internalId){
@@ -149,8 +162,17 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
         JsonObject userAsJson = content.asJson();
         request.response().end(userAsJson.toString());
     }
-    public void putContent(HttpServerRequest request,long internalId){}
-    public void postContent(HttpServerRequest request){}
+    public void putContent(HttpServerRequest request,long internalId){
+
+        MultiMap params = request.params();
+        JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+
+    }
+    public void postContent(HttpServerRequest request){
+        MultiMap params = request.params();
+        JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+
+    }
     public void deleteContent(HttpServerRequest request,long internalId){}
 
     public void getGroup(HttpServerRequest request,long internalId){
