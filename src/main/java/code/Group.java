@@ -30,8 +30,6 @@ public class Group {
     private Connection connection;
 
     public Group(long internalId) throws SQLException {
-        // todo for Kendra?
-
         connection = createDBConnection(connection);
 
         //Issue Query
@@ -48,7 +46,7 @@ public class Group {
             this._description = result.getString("description");
             this._password = result.getString("password");
             this._externalId = result.getString("external_id");
-            this._groupPhoto = result.getString("group_photo"); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+            this._groupPhoto = result.getString("group_photo"); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve.
             //this._groupPhoto = result.getBlob("group_photo"); //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
             //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
         }
