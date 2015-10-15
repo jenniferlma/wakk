@@ -72,11 +72,11 @@ public class User {
         connection.close();
     }
 
-    public static User buildFromJson(JsonObject json) throws SQLException {
+    public static User buildFromJson(JsonObject json)  {
         return new User(json);
     }
 
-    public User(JsonObject json) throws SQLException {
+    public User(JsonObject json) {
 
         //TODO write this user object to db
 
@@ -114,18 +114,24 @@ public class User {
         properties.setProperty("user", "postgres");
         properties.setProperty("password", "root");
         properties.setProperty("ssl", "true");
-        connection = getConnection(url, properties);
-        //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
-        String queryStatement = "INSERT INTO user(user_id, internal_id, username, contact_email, user_photo_blob, password) VALUES(?, ?, ?, ?, ?, ?)";
-        PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
-        preparedStatement.setLong(1, get_internalId());
-        preparedStatement.setString(3, get_userName());
-        preparedStatement.setString(4, get_email());
-        //preparedStatement.setBlob(5, get_userPhoto());
-        //preparedStatement.setString(6, get_passWord());
-        preparedStatement.executeUpdate();
 
-        connection.close();
+        try{
+            connection = getConnection(url, properties);
+            //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
+            String queryStatement = "INSERT INTO user(user_id, internal_id, username, contact_email, user_photo_blob, password) VALUES(?, ?, ?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
+            preparedStatement.setLong(1, get_internalId());
+            preparedStatement.setString(3, get_userName());
+            preparedStatement.setString(4, get_email());
+            //preparedStatement.setBlob(5, get_userPhoto());
+            //preparedStatement.setString(6, get_passWord());
+            preparedStatement.executeUpdate();
+
+            connection.close();
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
 
     }
 

@@ -118,7 +118,7 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
                 break;
             case DELETE:  handleDelete(request);
                 break;
-            default:  ;
+            default:  System.out.println("unsupported");
                 break;
         }
 
@@ -140,7 +140,7 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
     public void putUser(HttpServerRequest request,long internalId){
         MultiMap params = request.params();
         JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
-
+        _objectSupplier.updateUser(requestParamsJson);
 
 
     }
@@ -148,6 +148,7 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
 
         MultiMap params = request.params();
         JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+        _objectSupplier.makeUser(requestParamsJson);
 
     }
     public void deleteUser(HttpServerRequest request,long internalId){}
@@ -166,12 +167,13 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
 
         MultiMap params = request.params();
         JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+        _objectSupplier.updateContent(requestParamsJson);
 
     }
     public void postContent(HttpServerRequest request){
         MultiMap params = request.params();
         JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
-
+        _objectSupplier.makeContent(requestParamsJson);
     }
     public void deleteContent(HttpServerRequest request,long internalId){}
 
@@ -185,8 +187,17 @@ public class ServerRequestRouter implements Handler<HttpServerRequest> {
         JsonObject userAsJson = group.asJson();
         request.response().end(userAsJson.toString());
     }
-    public void postGroup(HttpServerRequest request){}
-    public void putGroup(HttpServerRequest request,long internalId){}
+    public void postGroup(HttpServerRequest request){
+        MultiMap params = request.params();
+        JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+        _objectSupplier.makeGroup(requestParamsJson);
+    }
+    public void putGroup(HttpServerRequest request,long internalId){
+        MultiMap params = request.params();
+        JsonObject requestParamsJson  = FunctionUtil.multiMapToJson(params);
+        _objectSupplier.updateGroup(requestParamsJson);
+
+    }
     public void deleteGroup(HttpServerRequest request,long internalId){}
 
 }

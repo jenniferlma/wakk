@@ -1,11 +1,14 @@
 package code;
 
-/**
- * Created by Eric Blair on 10/8/2015.
- */
+import io.vertx.core.json.JsonObject;
+
+
 public class Content  {
 
     public static IContent buildFromId(Long internalId){
+        return null;
+    }
+    public static IContent buildFromJson(JsonObject json){
         return null;
     }
 }

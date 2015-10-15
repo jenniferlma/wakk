@@ -12,6 +12,7 @@ import java.util.Set;
 
 /**
  * Created by Eric Blair on 10/8/2015, modified by wendyjan on 10/14/2015.
+ * Java Encapsulation of group
  */
 public class Group {
 
@@ -42,8 +43,8 @@ public class Group {
         _groupPhoto = json.getLong("groupPhoto");
         _groupLeader = json.getLong("groupLeader");
 
-        _userList = new HashSet<Long>(json.getJsonArray("userList").getList());
-        _contentList = new HashSet<Long>(json.getJsonArray("contentList").getList());
+        _userList = new HashSet<>(json.getJsonArray("userList").getList());
+        _contentList = new HashSet<>(json.getJsonArray("contentList").getList());
 
         _empty = false;
         _deleted = false;
@@ -53,9 +54,7 @@ public class Group {
         return new Group(internalId);
     }
 
-    public static Group buildFromJson( JsonObject json){
-        return null;
-    }
+
 
     public JsonObject asJson(){
         JsonObject groupAsJson = new JsonObject();
