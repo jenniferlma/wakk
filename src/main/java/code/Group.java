@@ -15,10 +15,17 @@ public class Group {
         return null;
     }
 
+    public static Group buildFromJson( JsonObject json){
+        return null;
+    }
+
     public JsonObject asJson(){
         JsonObject groupAsJson = new JsonObject();
         return  groupAsJson;
     }
+
+
+
 
     public String toString(){
         return asJson().toString();
