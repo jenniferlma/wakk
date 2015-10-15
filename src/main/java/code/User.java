@@ -34,10 +34,35 @@ public class User {
 
     }
     public static User buildFromId(long internalId) throws SQLException {
-        // TODO query db to get item using internalId
-        //Statement stmt = conn.createStatement();
-        //ResultSet rs = stmt.executeQuery("SELECT * " +
-        //        "FROM Customers WHERE Snum = 2001");
+        //TODO query db to get item using internalId
+        //Modified by ams 10/15/15
+        try {
+            Class.forName("org.postgres.Driver"); //Load Driver
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        String url = "jdbc:postgresql://localhost:5432/kwak";
+        Properties properties = new Properties();
+        properties.setProperty("user", "postgres");
+        properties.setProperty("password", "root");
+        properties.setProperty("ssl", "true");
+
+        Connection connection = DriverManager.getConnection(url, properties);
+
+        Statement statement = connection.createStatement();
+        ResultSet result = statement.executeQuery("SELECT * " +
+                "FROM users WHERE user_id = "+internalId+";");
+
+        while(result.next()){
+            //Add code to retrieve Blob type from DB
+            System.out.println("User Found");
+            System.out.println(result.getString(1));
+            result.close();
+        }
+        statement.close();
+        connection.close();
+
         return new User(internalId);
     }
 
