@@ -4,9 +4,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import util.FunctionUtil;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.sql.*;
 import java.util.*;
 
@@ -33,75 +30,40 @@ public class User {
     public User() {
 
     }
-    public static User buildFromId(long internalId) throws SQLException {
-        //TODO query db to get item using internalId
+
+    /*public User(long internalId) throws SQLException{
+        return new User(internalId);
+    }*/
+
+    public void buildFromId(long internalId) throws SQLException {
         //Modified by ams 10/15/15
-        try {
-            Class.forName("org.postgres.Driver"); //Load Driver
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        String url = "jdbc:postgresql://localhost:5432/kwak";
-        Properties properties = new Properties();
-        properties.setProperty("user", "postgres");
-        properties.setProperty("password", "root");
-        properties.setProperty("ssl", "true");
-
-        Connection connection = DriverManager.getConnection(url, properties);
+        connection = createDBConnection(connection);
 
         Statement statement = connection.createStatement();
         ResultSet result = statement.executeQuery("SELECT * " +
-                "FROM users WHERE user_id = "+internalId+";");
+                "FROM kwakschema.user WHERE interal_id = "+internalId+";");
 
         while(result.next()){
             //Add code to retrieve Blob type from DB
-            System.out.println("User Found");
-            System.out.println(result.getString(1));
-            result.close();
-        }
-        statement.close();
-        connection.close();
-
-        return new User(internalId);
-    }
-
-    public User(long internalId) throws SQLException{
-
-        try {
-            Class.forName("org.postgres.Driver"); //Load Driver
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        //Connect to Database using SSL Validation
-        String url = "jdbc:postgresql://localhost:5432/kwak";
-        Properties properties = new Properties();
-        properties.setProperty("user", "postgres");
-        properties.setProperty("password", "root");
-        properties.setProperty("ssl", "true");
-        connection = getConnection(url, properties);
-
-        //Issue Query
-        Statement statement = connection.createStatement();
-
-        //Process Query Results
-        ResultSet result = statement.executeQuery("SELECT * FROM user WHERE user_id = "+internalId+";");
-        while(result.next()){
-            //Add code to retrieve Blob type from DB
-            System.out.println("User Found");
-            System.out.println(result.getString(1));
-            result.close();
+            System.out.println("Group Found!");
+            this._internalId = result.getLong("internal_id");
+            this._userName = result.getString("username");
+            this._email = result.getString("contact_email");
+            this._passWord = result.getString("password");
+            this._externalId = result.getString("external_id");
+            //this._groupPhoto = result.getString("group_photo"); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve.
+            //this._groupPhoto = result.getBlob("group_photo"); //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
+            //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
         }
         statement.close();
         connection.close();
     }
 
-    public static User buildFromJson(JsonObject json)  {
+    public static User buildFromJson(JsonObject json) throws SQLException {
         return new User(json);
     }
 
-    public User(JsonObject json) {
+    public User(JsonObject json) throws SQLException {
 
         //TODO write this user object to db
 
@@ -121,43 +83,19 @@ public class User {
         _empty = false;
         _deleted = false;
 
-        try {
-            Class.forName("org.postgres.Driver"); //Load Driver
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
 
-        try {
-            OutputStream os = new FileOutputStream(_userPhoto);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        //Connect to Database using SSL Validation
-        String url = "jdbc:postgresql://localhost:5432/kwak";
-        Properties properties = new Properties();
-        properties.setProperty("user", "postgres");
-        properties.setProperty("password", "root");
-        properties.setProperty("ssl", "true");
-
-        try{
-            connection = getConnection(url, properties);
             //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
-            String queryStatement = "INSERT INTO user(user_id, internal_id, username, contact_email, user_photo_blob, password) VALUES(?, ?, ?, ?, ?, ?)";
+            String queryStatement = "INSERT INTO kwakschema.user(internal_id, username, contact_email, user_photo, password, external_id) VALUES(?, ?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
-            preparedStatement.setLong(1, get_internalId());
-            preparedStatement.setString(3, get_userName());
-            preparedStatement.setString(4, get_email());
-            //preparedStatement.setBlob(5, get_userPhoto());
-            //preparedStatement.setString(6, get_passWord());
+            preparedStatement.setLong(1, _internalId);
+            preparedStatement.setString(3, _userName);
+            preparedStatement.setString(4, _email);
+            preparedStatement.setString(5, _userPhoto); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+            preparedStatement.setString(6, _passWord); //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
+            //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
             preparedStatement.executeUpdate();
 
             connection.close();
-
-        }catch(SQLException e){
-            e.printStackTrace();
-        }
-
     }
 
     public long get_internalId() {
@@ -267,5 +205,22 @@ public class User {
         return _empty;
     }
 
+    private Connection createDBConnection(Connection connection) throws SQLException{
+        try {
+            Class.forName("org.postgres.Driver"); //Load Driver
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        //Connect to Database using SSL Validation
+        String url = "jdbc:postgresql://localhost:5432/kwak";
+        Properties properties = new Properties();
+        properties.setProperty("user", "postgres");
+        properties.setProperty("password", "root");
+        properties.setProperty("ssl", "true");
+        connection = getConnection(url, properties);
+
+        return connection;
+    }
 
 }
