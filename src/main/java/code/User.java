@@ -7,8 +7,6 @@ import util.FunctionUtil;
 import java.sql.*;
 import java.util.*;
 
-import static java.sql.DriverManager.getConnection;
-
 public class User {
 
     private long _internalId;
@@ -35,13 +33,18 @@ public class User {
         return new User(internalId);
     }*/
 
+
+    public static User buildFromJson(JsonObject json) throws SQLException {
+        return new User(json);
+    }
+
     public void buildFromId(long internalId) throws SQLException {
         //Modified by ams 10/15/15
         connection = createDBConnection(connection);
 
         Statement statement = connection.createStatement();
         ResultSet result = statement.executeQuery("SELECT * " +
-                "FROM kwakschema.user WHERE interal_id = "+internalId+";");
+                "FROM kwakschema.user WHERE internal_id = "+internalId+";");
 
         while(result.next()){
             //Add code to retrieve Blob type from DB
@@ -59,15 +62,7 @@ public class User {
         connection.close();
     }
 
-    public static User buildFromJson(JsonObject json) throws SQLException {
-        return new User(json);
-    }
-
     public User(JsonObject json) throws SQLException {
-
-        //TODO write this user object to db
-
-
 
         _internalId = FunctionUtil.generateId();
         _userPhoto = json.getString("userPhoto");
@@ -84,18 +79,18 @@ public class User {
         _deleted = false;
 
 
-            //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
-            String queryStatement = "INSERT INTO kwakschema.user(internal_id, username, contact_email, user_photo, password, external_id) VALUES(?, ?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
-            preparedStatement.setLong(1, _internalId);
-            preparedStatement.setString(3, _userName);
-            preparedStatement.setString(4, _email);
-            preparedStatement.setString(5, _userPhoto); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
-            preparedStatement.setString(6, _passWord); //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
-            //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
-            preparedStatement.executeUpdate();
+        //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
+        String queryStatement = "INSERT INTO kwakschema.user(internal_id, username, contact_email, user_photo, password, external_id) VALUES(?, ?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
+        preparedStatement.setLong(1, _internalId);
+        preparedStatement.setString(3, _userName);
+        preparedStatement.setString(4, _email);
+        preparedStatement.setString(5, _userPhoto); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+        preparedStatement.setString(6, _passWord); //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
+        //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
+        preparedStatement.executeUpdate();
 
-            connection.close();
+        connection.close();
     }
 
     public long get_internalId() {
@@ -206,19 +201,24 @@ public class User {
     }
 
     private Connection createDBConnection(Connection connection) throws SQLException{
-        try {
+        //TODO Setup Class.forName correctly
+        /*try {
             Class.forName("org.postgres.Driver"); //Load Driver
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-        }
+        }*/
+
+        DriverManager.registerDriver(new org.postgresql.Driver());
 
         //Connect to Database using SSL Validation
         String url = "jdbc:postgresql://localhost:5432/kwak";
         Properties properties = new Properties();
         properties.setProperty("user", "postgres");
         properties.setProperty("password", "root");
-        properties.setProperty("ssl", "true");
-        connection = getConnection(url, properties);
+        //TODO Setup SSL Connection correctly
+        //properties.setProperty("ssl", "false");
+        //properties.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
+        connection = DriverManager.getConnection(url, properties);
 
         return connection;
     }
