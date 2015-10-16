@@ -76,9 +76,8 @@ public class User {
         _email = json.getString("email");
         _passWord = json.getString("passPhrase");
 
-
-        _groupList = new HashSet<>();
-        _contentList = new HashSet<>();
+        _groupList = new HashSet<>(json.getJsonArray("groupList").getList());
+        _contentList = new HashSet<>(json.getJsonArray("contentList").getList());
 
         _empty = false;
         _deleted = false;
