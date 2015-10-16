@@ -14,19 +14,18 @@ public class UserTest {
     @Test
     public void test()throws SQLException{
         Long internalId = 000000000000000000L;
-        User user = new User();
-        user.buildFromId(internalId);
-        Long actual = user.get_internalId();
-        user.get_externalId();
-        user.get_userName();
-        user.get_passWord();
-        user.get_email();
-        System.out.println(user.get_internalId());
-        System.out.println(user.get_userName());
-        System.out.println(user.get_passWord());
-        System.out.println(user.get_email());
-        System.out.println(user.get_externalId());
-        assertEquals(internalId, actual);
+        User user = new User(internalId);
+        Long actualInternalId = user.get_internalId();
+        String externalId = user.get_externalId();
+        String username = user.get_userName();
+        String password = user.get_passWord();
+        String email = user.get_email();
+        System.out.println(actualInternalId);
+        System.out.println(username);
+        System.out.println(password);
+        System.out.println(email);
+        System.out.println(externalId);
+        assertEquals(internalId, actualInternalId);
     }
 
 }
