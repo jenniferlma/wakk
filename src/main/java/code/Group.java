@@ -29,8 +29,11 @@ public class Group {
 
     private Connection connection;
 
+    public Group(){}
+
     public Group(long internalId) throws SQLException {
-        connection = createDBConnection(connection);
+        Connection conn = null;
+        this.connection = createDBConnection(conn);
 
         //Issue Query
         Statement statement = connection.createStatement();
@@ -74,48 +77,37 @@ public class Group {
         _empty = false;
         _deleted = false;
 
-        try {
-            Class.forName("org.postgres.Driver"); //Load Driver
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        //Initiate Connection to DB
+        Connection conn = null;
+        this.connection = createDBConnection(conn);
 
-        //Connect to Database using SSL Validation
-        String url = "jdbc:postgresql://localhost:5432/kwak";
-        Properties properties = new Properties();
-        properties.setProperty("user", "postgres");
-        properties.setProperty("password", "root");
-        properties.setProperty("ssl", "true");
-        connection = getConnection(url, properties);
+        //Below can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
         //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
         String queryStatement = "INSERT INTO user(internal_id, group_leader, group_photo, group_description, user_list, content_list, password, group_name, external_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);"; //DB does not currently have a foreign key (ID that references the internal_id in another table to relate two tables). This may want to be added in the future.
         PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
         preparedStatement.setLong(1, _internalId);
         preparedStatement.setLong(2, _groupLeader);
-        //preparedStatement.setBlob(3, _groupPhoto); //Blob Data Type
-        preparedStatement.setString(3, _groupName); //Bytea Data Type
+        //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
+        //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+        //preparedStatement.setBlob(3, _groupPhoto);
+        preparedStatement.setString(3, _groupName);
         preparedStatement.setString(4, _description);
-        //preparedStatement.setArray(5, _userList); //Todo create method to add HashSet elements into Array
-        //preparedStatement.setArray(6, _contentList); /Todo create method to add HashSet elements into Array
+        preparedStatement.setArray(5, (Array) _userList);
+        preparedStatement.setArray(6, (Array) _contentList);
         preparedStatement.setString(7, _password);
         preparedStatement.setString(8, _groupName);
         preparedStatement.setString(9, _externalId);
         preparedStatement.executeUpdate();
 
-        connection.close();
+        //Close DB Connection
+        this.connection.close();
     }
-
-    public static Group buildFromId(Long internalId) throws SQLException {
-        return new Group(internalId);
-    }
-
-
 
     public JsonObject asJson(){
         JsonObject groupAsJson = new JsonObject();
 
         groupAsJson.put("groupId", _internalId);
-        groupAsJson.put("externalId", _externalId); //TODO Is this needed?
+        groupAsJson.put("externalId", _externalId);
         groupAsJson.put("groupName",  _groupName);
         groupAsJson.put("description", _description);
         groupAsJson.put("password", _password);
@@ -132,9 +124,6 @@ public class Group {
         return  groupAsJson;
     }
 
-
-
-
     public String toString(){
         return asJson().toString();
     }
@@ -143,7 +132,13 @@ public class Group {
         return _empty;
     }
 
+    public static Group buildFromId(Long internalId) throws SQLException {
+        //Retrieve row(s) from DB
+        return new Group(internalId);
+    }
+
     public static Group buildFromJson(JsonObject json) throws SQLException {
+        //Insert row(s) into DB
         return new Group(json);
     }
 

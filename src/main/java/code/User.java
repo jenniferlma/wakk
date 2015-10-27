@@ -25,30 +25,24 @@ public class User {
 
     private Connection connection;
 
-    public User() {
+    //Default Constructor
+    public User(){}
 
-    }
-
-    /*public User(long internalId) throws SQLException{
-        return new User(internalId);
-    }*/
-
-
-    public static User buildFromJson(JsonObject json) throws SQLException {
-        return new User(json);
-    }
-
-    public void buildFromId(long internalId) throws SQLException {
+    public User(long internalId) throws SQLException{
         //Modified by ams 10/15/15
-        connection = createDBConnection(connection);
 
-        Statement statement = connection.createStatement();
+        //Initiate Connection to DB
+        Connection conn = null;
+        this.connection = createDBConnection(conn);
+
+        Statement statement = this.connection.createStatement();
         ResultSet result = statement.executeQuery("SELECT * " +
-                "FROM kwakschema.user WHERE internal_id = "+internalId+";");
+                "FROM kwakschema.user WHERE internal_id = " + internalId + ";");
 
         while(result.next()){
-            //Add code to retrieve Blob type from DB
-            System.out.println("Group Found!");
+            //TODO Discuss if images should be Blob or Bytea & Add code to retrieve Blob or Bytea type from DB
+            //TODO Kendra - Read user_photo column to DB after discussing the data type we decide to use
+            System.out.println("User Found!");
             this._internalId = result.getLong("internal_id");
             this._userName = result.getString("username");
             this._email = result.getString("contact_email");
@@ -59,7 +53,8 @@ public class User {
             //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
         }
         statement.close();
-        connection.close();
+        //Close DB Connection
+        this.connection.close();
     }
 
     public User(JsonObject json) throws SQLException {
@@ -77,19 +72,32 @@ public class User {
         _empty = false;
         _deleted = false;
 
-
+        //Below can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
         //Utilize Prepared Statements for security. ?'s are placeholders for the VALUES which are filled in later.
-        String queryStatement = "INSERT INTO kwakschema.user(internal_id, username, contact_email, user_photo, password, external_id) VALUES(?, ?, ?, ?, ?, ?)";
+        String queryStatement = "INSERT INTO kwakschema.user(internal_id, username, contact_email, user_photo, password, external_id) VALUES(?, ?, ?, ?, ?, ?);";
         PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
         preparedStatement.setLong(1, _internalId);
         preparedStatement.setString(3, _userName);
         preparedStatement.setString(4, _email);
-        preparedStatement.setString(5, _userPhoto); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
-        preparedStatement.setString(6, _passWord); //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
-        //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
+        //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
+        //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+        preparedStatement.setString(5, _userPhoto);
+        preparedStatement.setString(6, _passWord);
+        preparedStatement.setArray(7, (Array) _groupList);
+        preparedStatement.setArray(8, (Array) _contentList);
         preparedStatement.executeUpdate();
 
-        connection.close();
+        this.connection.close();
+    }
+
+    public static User buildFromId(long internalId) throws SQLException {
+        //Retrieve row(s) from DB
+        return new User(internalId);
+    }
+
+    public static User buildFromJson(JsonObject json) throws SQLException {
+        //Insert row(s) into DB
+        return new User(json);
     }
 
     public long get_internalId() {

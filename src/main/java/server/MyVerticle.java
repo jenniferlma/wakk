@@ -31,7 +31,7 @@ public class MyVerticle extends AbstractVerticle {
                         response.headers()
                                 .add("Content-Length", String.valueOf(57))
                                 .add("Content-Type", "text/html");
-                        Long internalId = 000000000000000000L;
+                        Long internalId = 0L;
                         try {
                             User user = new User(internalId);
                             //String user_des = user.toString();
