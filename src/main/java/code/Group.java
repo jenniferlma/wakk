@@ -2,8 +2,14 @@ package code;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.postgresql.largeobject.LargeObject;
+import org.postgresql.largeobject.LargeObjectManager;
 import util.FunctionUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -19,8 +25,9 @@ public class Group {
     private String _externalId;
     private String _groupName; // group's username
     private String _description;
-    private String _password; //Future TODO create method to encrypt and decrypt password
+    private String _password; //Future TODO: create method to encrypt and decrypt password
     private String _groupPhoto;
+    private byte _byteGroupPhoto;
     private long _groupLeader; // long user ID
     private Set<Long> _userList; // contains user IDs
     private Set<Long> _contentList; // contains content IDs
@@ -32,14 +39,20 @@ public class Group {
     public Group(){}
 
     public Group(long internalId) throws SQLException {
+        //Initiate Connection to DB
         Connection conn = null;
         this.connection = createDBConnection(conn);
 
-        //Issue Query
-        Statement statement = connection.createStatement();
+        //Necessary if we use Blob
+        this.connection.setAutoCommit(false);
+        LargeObjectManager largeObjectManager = ((org.postgresql.PGConnection)this.connection).getLargeObjectAPI();
 
-        //Process Query Results (Records)
-        ResultSet result = statement.executeQuery("SELECT * FROM kwakschema.group WHERE user_id = " + internalId); //No need to include ; in sql statement
+        PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT * FROM kwakschema.user WHERE internal_id = " + internalId + ";");
+        //ResultSet result = statement.executeQuery("SELECT * " + "FROM kwakschema.user WHERE internal_id = " + internalId + ";");
+        preparedStatement.setString(7, "image.gif"); //TODO: Verify image_name parameter index in DB
+        ResultSet result = preparedStatement.executeQuery();
+
+        //Below can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
         while(result.next()){
             //Add code to retrieve Blob type from DB
             System.out.println("Group Found!");
@@ -49,12 +62,33 @@ public class Group {
             this._description = result.getString("description");
             this._password = result.getString("password");
             this._externalId = result.getString("external_id");
-            this._groupPhoto = result.getString("group_photo"); //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve.
-            //this._groupPhoto = result.getBlob("group_photo"); //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
-            //The above can also be done by the column index number: System.out.println(result.getString("ColumnIndexNo");
+            // -----Start Bytea and Blob Code-----
+            // Bytea and Blob code referenced from http://www.postgresql.org/docs/7.4/static/jdbc-binary-data.html
+            /*
+            Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+            Not well suited for storing very large amounts of binary data. A column can hold up to 1GB of binary data and requires a huge amount of memory to process
+            the large value.
+            */
+            //Insert Bytea Image
+            this._byteGroupPhoto = result.getByte("group_photo");
+
+            /*
+            Blob (Large Binary Object): Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
+            Better suited for storing very large values. Stores the binary data in a separate table in a special format and refers to that table by sotring a value of
+            type OID in the actual table. When deleting a row that contains a Large Object reference, it does not delete the Large Object, instead deleting
+            the Large Object is a separate operation that needs to be performed.
+            */
+            //Insert LargeObject
+            int oid = result.getInt(1); //TODO: Verify image_name parameter index in DB
+            LargeObject largeObject = largeObjectManager.open(oid, LargeObjectManager.READ);
+            byte buffer[] = new byte[largeObject.size()];
+            largeObject.read(buffer, 0, largeObject.size());
+            largeObject.close();
+            // -----End Bytea and Blob Code-----
         }
+
         result.close();
-        statement.close();
+        preparedStatement.close();
         connection.close();
     }
 
@@ -87,9 +121,66 @@ public class Group {
         PreparedStatement preparedStatement = connection.prepareStatement(queryStatement);
         preparedStatement.setLong(1, _internalId);
         preparedStatement.setLong(2, _groupLeader);
-        //Blob: Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
-        //Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+
+        // -----Start Bytea and Blob Code-----
+        // Bytea and Blob code referenced from http://www.postgresql.org/docs/7.4/static/jdbc-binary-data.html
+        /*
+        Bytea: Stores the data in a column, exported as part of a backup. Uses standard database functions to save and retrieve. Recommended for your needs.
+        Not well suited for storing very large amounts of binary data. A column can hold up to 1GB of binary data and requires a huge amount of memory to process
+        the large value.
+        */
+        //Insert Bytea Image
+        File file1 = new File("image.gif");
+        FileInputStream fis1 = null;
+        try {
+            fis1 = new FileInputStream(file1);
+            preparedStatement.setString(3, file1.getName()); //TODO: Create new Text Type Column image_name
+            preparedStatement.setBinaryStream(4, fis1, file1.length()); //TODO: Update Blob Type Column image_bytea
+            fis1.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        /*
+        Blob (Large Binary Object): Stores the data externally, not normally exported as part of a backup. Requires special database functions to save and retrieve.
+        Better suited for storing very large values. Stores the binary data in a separate table in a special format and refers to that table by sotring a value of
+        type OID in the actual table. When deleting a row that contains a Large Object reference, it does not delete the Large Object, instead deleting
+        the Large Object is a separate operation that needs to be performed.
+        */
+        //Insert LargeObject
+        this.connection.setAutoCommit(false);
+        LargeObjectManager largeObjectManager = ((org.postgresql.PGConnection)this.connection).getLargeObjectAPI();
+        Long oid = largeObjectManager.createLO(LargeObjectManager.READ | LargeObjectManager.WRITE);
+        LargeObject largeObject = largeObjectManager.open(oid, LargeObjectManager.WRITE);
+        File file2 = new File("image.gif");
+        FileInputStream fis2 = null;
+
+        try {
+            fis2 = new FileInputStream(file2);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        byte buffer[] = new byte[2048];
+        int s, tl = 0;
+
+        try {
+            while((s = fis2.read(buffer, 0, 2048)) > 0){
+                largeObject.write(buffer, 0, s);
+                tl += s;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        largeObject.close();
+
+        preparedStatement.setString(3, file2.getName()); //TODO: Create Text Column image_name
+        preparedStatement.setLong(4, oid); //TODO: Create Int Column object_identifier
+        // -----End Bytea and Blob Code-----
         //preparedStatement.setBlob(3, _groupPhoto);
+
+        //TODO: Update Paramter Index to reflect DB after changes to previous TODO
         preparedStatement.setString(3, _groupName);
         preparedStatement.setString(4, _description);
         preparedStatement.setArray(5, (Array) _userList);
@@ -99,6 +190,7 @@ public class Group {
         preparedStatement.setString(9, _externalId);
         preparedStatement.executeUpdate();
 
+        preparedStatement.close();
         //Close DB Connection
         this.connection.close();
     }
